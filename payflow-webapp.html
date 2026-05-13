@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PayFlow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   TOKENS
+═══════════════════════════════════════════ */
+:root {
+  --bg:         #F4F2ED;
+  --bg2:        #ECEAE3;
+  --bg3:        #E2DFD6;
+  --surface:    #FFFFFF;
+  --ink:        #1A1916;
+  --ink2:       #4A4840;
+  --ink3:       #888370;
+  --border:     #D8D4C8;
+  --border2:    #C8C4B6;
+
+  --dark:       #1A1916;
+  --dark2:      #252320;
+  --dark3:      #2F2D29;
+  --dark-border:#3C3A34;
+  --dark-text:  #F4F2ED;
+  --dark-text2: #B0ADA2;
+  --dark-text3: #6E6B62;
+
+  --green:      #1A8A63;
+  --green-light:#D4F0E4;
+  --green-mid:  #3DB883;
+  --green-dark: #0E5C40;
+  --green-glow: rgba(26,138,99,0.15);
+
+  --amber:      #C47B14;
+  --amber-light:#FDF0D5;
+  --amber-dark: #7A4B08;
+
+  --blue:       #1E6FBF;
+  --blue-light: #DAE9F8;
+  --blue-dark:  #0D4A87;
+
+  --purple:     #5B4EBF;
+  --purple-light:#E8E6F8;
+  --purple-dark:#3A2F9E;
+
+  --red:        #C43030;
+  --red-light:  #FAE0E0;
+
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.06);
+}
+
+/* ═══════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; }
+body {
+  font-family: 'Figtree', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input { font-family: inherit; }
+
+/* ═══════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════ */
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--dark);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+
+.sidebar-logo {
+  padding: 28px 24px 20px;
+  border-bottom: 1px solid var(--dark-border);
+}
+.logo-mark {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--dark-text);
+  letter-spacing: -0.04em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.logo-icon {
+  width: 32px; height: 32px;
+  background: var(--green);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; color: #fff;
+  flex-shrink: 0;
+}
+.logo-sub {
+  font-size: 11px;
+  color: var(--dark-text3);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.sidebar-user {
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--dark-border);
+}
+.user-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--green-glow);
+  border: 1.5px solid var(--green);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; color: var(--green-mid);
+  flex-shrink: 0;
+}
+.user-name { font-size: 13px; font-weight: 500; color: var(--dark-text); }
+.user-company { font-size: 11px; color: var(--dark-text3); }
+
+.sidebar-nav { flex: 1; overflow-y: auto; padding: 10px 0; }
+
+.nav-group-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dark-text3);
+  padding: 12px 20px 4px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 20px;
+  cursor: pointer;
+  border-radius: 0;
+  transition: background 0.12s;
+  position: relative;
+  color: var(--dark-text2);
+  font-size: 13px;
+  font-weight: 400;
+  text-decoration: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  background: none;
+}
+.nav-item:hover { background: rgba(255,255,255,0.04); color: var(--dark-text); }
+.nav-item.active {
+  background: rgba(26,138,99,0.12);
+  color: var(--green-mid);
+}
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 4px; bottom: 4px;
+  width: 3px;
+  background: var(--green);
+  border-radius: 0 2px 2px 0;
+}
+.nav-icon {
+  width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0;
+}
+.nav-badge {
+  margin-left: auto;
+  background: var(--green-dark);
+  color: var(--green-mid);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 20px;
+}
+
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--dark-border);
+  font-size: 11px;
+  color: var(--dark-text3);
+  line-height: 1.6;
+}
+.chain-live {
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 4px;
+}
+.chain-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green-mid);
+  animation: blink 2s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* ── MAIN ── */
+.main {
+  flex: 1;
+  margin-left: 260px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0; z-index: 50;
+  box-shadow: var(--shadow-sm);
+}
+.topbar-title { font-size: 16px; font-weight: 600; color: var(--ink); letter-spacing: -0.02em; }
+.topbar-sub { font-size: 12px; color: var(--ink3); margin-top: 1px; }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+
+.topbar-date {
+  font-size: 12px; color: var(--ink3);
+  background: var(--bg2);
+  padding: 4px 10px; border-radius: 20px;
+  border: 1px solid var(--border);
+}
+.hamburger {
+  display: none;
+  width: 36px; height: 36px;
+  border-radius: var(--r-sm);
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  align-items: center; justify-content: center;
+  font-size: 18px; color: var(--ink2);
+  cursor: pointer;
+}
+
+.page-content {
+  flex: 1;
+  padding: 28px 32px 48px;
+  max-width: 1000px;
+}
+
+/* ═══════════════════════════════════════════
+   SCREENS
+═══════════════════════════════════════════ */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ═══════════════════════════════════════════
+   COMPONENTS
+═══════════════════════════════════════════ */
+
+/* Hero card */
+.hero-band {
+  background: var(--dark);
+  border-radius: var(--r-xl);
+  padding: 28px 32px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.hero-band::after {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 220px; height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(26,138,99,0.2) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-label {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--green-mid); margin-bottom: 6px;
+  display: flex; align-items: center; gap: 6px;
+}
+.pulse-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green-mid); animation: blink 2s infinite;
+}
+.hero-amount {
+  font-size: 48px; font-weight: 700;
+  color: #fff; letter-spacing: -0.04em; line-height: 1;
+}
+.hero-amount .currency { font-size: 24px; font-weight: 400; color: var(--dark-text2); margin-left: 4px; }
+.hero-sub { font-size: 13px; color: var(--dark-text2); margin-top: 8px; }
+.hero-row { display: flex; align-items: flex-end; gap: 32px; flex-wrap: wrap; }
+.hero-right { flex: 1; min-width: 200px; }
+
+.prog-label-row { display: flex; justify-content: space-between; font-size: 11px; color: var(--dark-text3); margin-bottom: 6px; }
+.prog-track { height: 6px; background: var(--dark3); border-radius: 3px; overflow: hidden; }
+.prog-fill { height: 100%; background: var(--green-mid); border-radius: 3px; transition: width 1s ease; }
+.prog-pct { font-size: 26px; font-weight: 700; color: var(--green-mid); margin-bottom: 4px; letter-spacing: -0.03em; }
+
+/* Countdown */
+.countdown-strip {
+  display: flex; gap: 8px; margin-bottom: 20px;
+}
+.cd-unit {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 14px 12px;
+  text-align: center;
+  min-width: 70px;
+  box-shadow: var(--shadow-sm);
+}
+.cd-val { font-size: 26px; font-weight: 700; color: var(--ink); letter-spacing: -0.03em; }
+.cd-lbl { font-size: 10px; font-weight: 600; color: var(--ink3); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+.cd-sep { font-size: 24px; font-weight: 300; color: var(--border2); align-self: center; margin-bottom: 18px; }
+
+/* Stat cards */
+.stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+}
+.stat-label { font-size: 11px; font-weight: 600; color: var(--ink3); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+.stat-value { font-size: 22px; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; }
+.stat-value.green { color: var(--green); }
+.stat-value.amber { color: var(--amber); }
+.stat-value.blue { color: var(--blue); }
+.stat-note { font-size: 11px; color: var(--ink3); margin-top: 2px; }
+
+/* Action cards */
+.action-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.action-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+}
+.action-card:hover {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px var(--green-glow), var(--shadow-md);
+  transform: translateY(-1px);
+}
+.action-card:active { transform: translateY(0); }
+.ac-icon {
+  width: 40px; height: 40px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; margin-bottom: 12px;
+}
+.ac-icon.green { background: var(--green-light); color: var(--green); }
+.ac-icon.amber { background: var(--amber-light); color: var(--amber); }
+.ac-icon.blue { background: var(--blue-light); color: var(--blue); }
+.ac-icon.purple { background: var(--purple-light); color: var(--purple); }
+.ac-icon.dark { background: var(--dark3); color: var(--dark-text2); }
+.ac-title { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+.ac-sub { font-size: 11px; color: var(--ink3); line-height: 1.4; }
+
+/* Section header */
+.section-hd { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
+.section-title { font-size: 14px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; }
+.section-link { font-size: 12px; color: var(--green); cursor: pointer; font-weight: 500; }
+.section-link:hover { text-decoration: underline; }
+
+/* Cards */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.card-body { padding: 20px 24px; }
+.card-dark {
+  background: var(--dark2);
+  border: 1px solid var(--dark-border);
+  border-radius: var(--r-lg);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.card-dark .card-body { padding: 20px 24px; }
+
+/* Slider */
+.slider-wrap { margin-bottom: 14px; }
+.slider-label-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink3); margin-bottom: 8px; }
+.big-amount { font-size: 36px; font-weight: 700; color: var(--ink); letter-spacing: -0.04em; margin-bottom: 12px; }
+.big-amount .unit { font-size: 18px; font-weight: 400; color: var(--ink3); }
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%; height: 6px;
+  background: var(--bg3);
+  border-radius: 3px; outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--dark);
+  border: 3px solid var(--green);
+  cursor: pointer;
+  box-shadow: 0 0 0 4px var(--green-glow);
+  transition: box-shadow 0.15s;
+}
+input[type=range]::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 0 7px var(--green-glow);
+}
+
+.pill-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.pill {
+  padding: 6px 14px; border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  font-size: 12px; font-weight: 500; color: var(--ink3);
+  cursor: pointer; transition: all 0.12s;
+}
+.pill:hover { border-color: var(--green); color: var(--green); }
+.pill.sel { background: var(--green-light); border-color: var(--green); color: var(--green-dark); }
+
+/* Fee table */
+.fee-table { width: 100%; }
+.fee-row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--bg2); font-size: 13px; }
+.fee-row:last-child { border-bottom: none; }
+.fee-row .lbl { color: var(--ink3); }
+.fee-row .val { font-weight: 500; color: var(--ink); }
+.fee-row .free { color: var(--green); font-weight: 600; }
+.fee-row.total { margin-top: 4px; padding-top: 12px; border-top: 2px solid var(--border); border-bottom: none; font-weight: 700; }
+.fee-row.total .val { font-size: 16px; }
+
+/* Buttons */
+.btn-primary {
+  width: 100%; padding: 15px;
+  background: var(--dark);
+  color: var(--dark-text);
+  border-radius: var(--r-md);
+  font-size: 15px; font-weight: 600;
+  font-family: 'Figtree', sans-serif;
+  letter-spacing: -0.01em;
+  border: none; cursor: pointer;
+  transition: all 0.15s;
+  position: relative; overflow: hidden;
+}
+.btn-primary::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: rgba(255,255,255,0);
+  transition: background 0.15s;
+}
+.btn-primary:hover::after { background: rgba(255,255,255,0.06); }
+.btn-primary:active { transform: scale(0.99); }
+.btn-primary:disabled { opacity: 0.4; cursor: default; }
+.btn-primary.green-btn { background: var(--green); }
+.btn-primary.blue-btn { background: var(--blue); }
+.btn-primary.amber-btn { background: var(--amber); }
+
+.btn-outline {
+  width: 100%; padding: 13px;
+  background: transparent;
+  color: var(--ink2);
+  border-radius: var(--r-md);
+  font-size: 14px; font-weight: 500;
+  font-family: 'Figtree', sans-serif;
+  border: 1.5px solid var(--border);
+  cursor: pointer; transition: all 0.15s;
+}
+.btn-outline:hover { border-color: var(--ink2); color: var(--ink); }
+.mt-8 { margin-top: 8px; }
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+.mt-20 { margin-top: 20px; }
+
+/* Info banner */
+.info-banner {
+  display: flex; gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--r-sm);
+  margin-bottom: 14px;
+  font-size: 12px; line-height: 1.5;
+}
+.info-banner.green { background: var(--green-light); border: 1px solid #A8DFC8; color: var(--green-dark); }
+.info-banner.amber { background: var(--amber-light); border: 1px solid #F0CCA0; color: var(--amber-dark); }
+.info-banner.blue { background: var(--blue-light); border: 1px solid #A8C8EE; color: var(--blue-dark); }
+.info-banner.purple { background: var(--purple-light); border: 1px solid #C0BAEE; color: var(--purple-dark); }
+.banner-icon { font-size: 16px; flex-shrink: 0; }
+
+/* Score bars */
+.score-bars { display: flex; flex-direction: column; gap: 10px; }
+.score-row { display: flex; align-items: center; gap: 12px; }
+.score-lbl { font-size: 12px; color: var(--ink3); width: 130px; flex-shrink: 0; }
+.score-track { flex: 1; height: 5px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+.score-fill { height: 100%; border-radius: 3px; background: var(--green); transition: width 1s ease; }
+.score-num { font-size: 11px; font-weight: 600; color: var(--ink2); width: 28px; text-align: right; }
+
+/* Transaction list */
+.tx-list { display: flex; flex-direction: column; gap: 2px; }
+.tx-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--bg2);
+}
+.tx-item:last-child { border-bottom: none; }
+.tx-icon-wrap {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0;
+}
+.tx-icon-wrap.g { background: var(--green-light); color: var(--green); }
+.tx-icon-wrap.b { background: var(--blue-light); color: var(--blue); }
+.tx-icon-wrap.p { background: var(--purple-light); color: var(--purple); }
+.tx-icon-wrap.a { background: var(--amber-light); color: var(--amber); }
+.tx-body { flex: 1; }
+.tx-name { font-size: 13px; font-weight: 500; color: var(--ink); }
+.tx-date { font-size: 11px; color: var(--ink3); margin-top: 1px; }
+.tx-amt { font-size: 14px; font-weight: 700; }
+.tx-amt.pos { color: var(--green); }
+.tx-amt.neg { color: var(--blue); }
+.tx-amt.dim { font-size: 11px; color: var(--ink3); font-family: 'JetBrains Mono', monospace; }
+
+/* Bar chart */
+.mini-chart { display: flex; align-items: flex-end; gap: 6px; height: 80px; }
+.mini-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.mini-bar { width: 100%; border-radius: 4px 4px 0 0; background: var(--ink); opacity: 0.12; transition: all 0.3s; }
+.mini-bar.active { opacity: 1; background: var(--green); }
+.mini-month { font-size: 10px; color: var(--ink3); }
+.mini-bar:hover { opacity: 0.7; }
+
+/* Chain blocks */
+.block-card {
+  background: var(--dark2);
+  border: 1px solid var(--dark-border);
+  border-radius: var(--r-md);
+  padding: 16px;
+  margin-bottom: 8px;
+}
+.block-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.block-num { font-size: 12px; font-weight: 700; color: var(--purple); font-family: 'JetBrains Mono', monospace; }
+.block-time { font-size: 10px; color: var(--dark-text3); font-family: 'JetBrains Mono', monospace; }
+.block-event { font-size: 13px; color: var(--dark-text2); margin-bottom: 6px; }
+.block-event strong { color: var(--dark-text); }
+.block-hash { font-size: 9px; color: var(--dark-text3); font-family: 'JetBrains Mono', monospace; word-break: break-all; line-height: 1.6; }
+
+/* Success */
+.success-center {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 40px 20px 20px;
+  text-align: center;
+}
+.success-ring {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: var(--green-light);
+  border: 2px solid var(--green);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; color: var(--green);
+  margin-bottom: 20px;
+  animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes popIn { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+.success-title { font-size: 28px; font-weight: 700; color: var(--ink); letter-spacing: -0.03em; margin-bottom: 6px; }
+.success-note { font-size: 14px; color: var(--ink3); max-width: 340px; line-height: 1.6; }
+
+/* HR Workflow */
+.hr-request {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 16px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.hr-request:hover { border-color: var(--green); }
+.hr-req-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
+.hr-req-name { font-size: 13px; font-weight: 600; color: var(--ink); }
+.status-pill {
+  font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 20px;
+}
+.status-pill.pending { background: var(--amber-light); color: var(--amber-dark); }
+.status-pill.approved { background: var(--green-light); color: var(--green-dark); }
+.status-pill.review { background: var(--blue-light); color: var(--blue-dark); }
+.hr-req-sub { font-size: 12px; color: var(--ink3); }
+
+/* Gamification */
+.game-card {
+  background: linear-gradient(135deg, var(--dark) 0%, var(--dark3) 100%);
+  border-radius: var(--r-xl);
+  padding: 28px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.game-card::before {
+  content: '';
+  position: absolute; top: -40px; right: -40px;
+  width: 160px; height: 160px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(91,78,191,0.25) 0%, transparent 70%);
+}
+.game-title { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--purple); margin-bottom: 6px; }
+.game-headline { font-size: 24px; font-weight: 700; color: #fff; letter-spacing: -0.03em; margin-bottom: 8px; }
+.game-sub { font-size: 13px; color: var(--dark-text2); line-height: 1.5; }
+.game-progress {
+  margin-top: 20px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 8px;
+  height: 10px;
+  overflow: hidden;
+}
+.game-fill {
+  height: 100%;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--purple) 0%, var(--purple-dark) 100%);
+  transition: width 1s ease;
+}
+.game-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--dark-text3); margin-top: 6px; }
+
+/* Roundup */
+.roundup-card {
+  background: var(--amber-light);
+  border: 1px solid #F0CCA0;
+  border-radius: var(--r-lg);
+  padding: 20px 24px;
+  margin-bottom: 16px;
+}
+.roundup-title { font-size: 13px; font-weight: 700; color: var(--amber-dark); margin-bottom: 4px; }
+.roundup-amount { font-size: 32px; font-weight: 700; color: var(--amber); letter-spacing: -0.04em; }
+.roundup-sub { font-size: 12px; color: var(--amber-dark); opacity: 0.7; margin-top: 2px; }
+
+/* Two col layout */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+/* Overlay for mobile */
+.sidebar-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 99;
+}
+.mobile-bottom-nav {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--dark);
+  border-top: 1px solid var(--dark-border);
+  z-index: 200;
+  padding: 6px 0 env(safe-area-inset-bottom, 0);
+}
+.mbn-inner { display: flex; }
+.mbn-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 6px 0; cursor: pointer;
+  font-size: 9px; font-weight: 600; color: var(--dark-text3);
+  text-transform: uppercase; letter-spacing: 0.04em;
+  border: none; background: none; font-family: 'Figtree', sans-serif;
+  transition: color 0.12s;
+}
+.mbn-item:hover { color: var(--dark-text); }
+.mbn-item.active { color: var(--green-mid); }
+.mbn-icon { font-size: 20px; }
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  .sidebar-overlay.open { display: block; }
+  .main { margin-left: 0; }
+  .topbar { padding: 0 16px; }
+  .page-content { padding: 20px 16px 100px; }
+  .hamburger { display: flex; }
+  .mobile-bottom-nav { display: block; }
+  .two-col { grid-template-columns: 1fr; }
+  .three-col { grid-template-columns: 1fr 1fr; }
+  .hero-amount { font-size: 36px; }
+  .hero-row { flex-direction: column; gap: 16px; }
+  .countdown-strip { flex-wrap: wrap; }
+  .cd-sep { display: none; }
+}
+
+@media (max-width: 500px) {
+  .action-grid { grid-template-columns: 1fr 1fr; }
+  .stat-row { grid-template-columns: 1fr 1fr; }
+  .three-col { grid-template-columns: 1fr; }
+  .hero-band { padding: 20px; }
+  .hero-amount { font-size: 30px; }
+}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">
+        <div class="logo-icon">₱</div>
+        PayFlow
+      </div>
+      <div class="logo-sub">Earned Wage Access Platform</div>
+    </div>
+
+    <div class="sidebar-user">
+      <div class="user-avatar">KM</div>
+      <div>
+        <div class="user-name">Kovács Máté</div>
+        <div class="user-company">TechKft-019</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-group-label">Áttekintés</div>
+      <button class="nav-item active" data-screen="home" onclick="nav(this)">
+        <div class="nav-icon">⌂</div> Főoldal
+      </button>
+      <button class="nav-item" data-screen="activity" onclick="nav(this)">
+        <div class="nav-icon">▦</div> Aktivitás
+      </button>
+
+      <div class="nav-group-label">Bérelőleg</div>
+      <button class="nav-item" data-screen="withdraw" onclick="nav(this)">
+        <div class="nav-icon">↑</div> Előleg felvétel <span class="nav-badge">F2</span>
+      </button>
+      <button class="nav-item" data-screen="loan" onclick="nav(this)">
+        <div class="nav-icon">%</div> Bérelőhitelezés <span class="nav-badge">F3</span>
+      </button>
+
+      <div class="nav-group-label">Befektetés</div>
+      <button class="nav-item" data-screen="game" onclick="nav(this)">
+        <div class="nav-icon">◈</div> Kamat-befektetés <span class="nav-badge">F4</span>
+      </button>
+      <button class="nav-item" data-screen="roundup" onclick="nav(this)">
+        <div class="nav-icon">⬡</div> Felkerekítés <span class="nav-badge">F6</span>
+      </button>
+
+      <div class="nav-group-label">Munkáltató</div>
+      <button class="nav-item" data-screen="p2p" onclick="nav(this)">
+        <div class="nav-icon">⇅</div> P2P segélyhitel <span class="nav-badge">F5</span>
+      </button>
+      <button class="nav-item" data-screen="chain" onclick="nav(this)">
+        <div class="nav-icon">⛓</div> Blokklánc audit
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="chain-live">
+        <div class="chain-dot"></div>
+        <span style="color:var(--green-mid);font-weight:600">Lánc él</span>
+      </div>
+      Polygon L2 · Block #1,847,332<br>
+      Fizetésnap hitelesítve · TechKft-019
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <!-- ── MAIN ── -->
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <div class="topbar-title" id="topbar-title">Főoldal</div>
+        <div class="topbar-sub" id="topbar-sub">Üdvözöljük, Kovács Máté!</div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-date" id="topbar-date">—</div>
+        <button class="hamburger" onclick="toggleSidebar()">☰</button>
+      </div>
+    </header>
+
+    <div class="page-content">
+
+      <!-- ════════ HOME ════════ -->
+      <div class="screen active" id="sc-home">
+        <div class="hero-band">
+          <div class="hero-row">
+            <div>
+              <div class="hero-label"><div class="pulse-dot"></div> Ma kivehető (F2)</div>
+              <div class="hero-amount"><span id="h-avail">—</span><span class="currency">Ft</span></div>
+              <div class="hero-sub">Ledolgozott béredből · azonnal · 0 Ft díj</div>
+            </div>
+            <div class="hero-right">
+              <div class="prog-pct" id="h-pct">—%</div>
+              <div class="prog-label-row"><span>Hónap eleje</span><span id="h-day">— / — nap</span></div>
+              <div class="prog-track"><div class="prog-fill" id="h-fill" style="width:0%"></div></div>
+              <div class="prog-label-row" style="margin-top:6px"><span style="color:var(--dark-text3)">Havi nettó bér</span><span style="color:var(--dark-text2)">214 000 Ft</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="countdown-strip">
+          <div class="cd-unit"><div class="cd-val" id="cd-d">--</div><div class="cd-lbl">Nap</div></div>
+          <div class="cd-sep">:</div>
+          <div class="cd-unit"><div class="cd-val" id="cd-h">--</div><div class="cd-lbl">Óra</div></div>
+          <div class="cd-sep">:</div>
+          <div class="cd-unit"><div class="cd-val" id="cd-m">--</div><div class="cd-lbl">Perc</div></div>
+          <div class="cd-sep">:</div>
+          <div class="cd-unit"><div class="cd-val" id="cd-s">--</div><div class="cd-lbl">Mp</div></div>
+          <div style="align-self:center;margin-left:8px;font-size:12px;color:var(--ink3)">← fizetésnapig</div>
+        </div>
+
+        <div class="action-grid">
+          <div class="action-card" onclick="nav(document.querySelector('[data-screen=withdraw]'))">
+            <div class="ac-icon green">↑</div>
+            <div class="ac-title">Előleg felvétel</div>
+            <div class="ac-sub">Azonnal · ingyenes · AFR</div>
+          </div>
+          <div class="action-card" onclick="nav(document.querySelector('[data-screen=loan]'))">
+            <div class="ac-icon blue">%</div>
+            <div class="ac-title">Bérelőhitelezés</div>
+            <div class="ac-sub">Még le nem dolg. rész · 1,8%</div>
+          </div>
+          <div class="action-card" onclick="nav(document.querySelector('[data-screen=game]'))">
+            <div class="ac-icon purple">◈</div>
+            <div class="ac-title">Kamat-befektetés</div>
+            <div class="ac-sub">Dolgozd le a kamatot</div>
+          </div>
+          <div class="action-card" onclick="nav(document.querySelector('[data-screen=roundup]'))">
+            <div class="ac-icon amber">⬡</div>
+            <div class="ac-title">Felkerekítés</div>
+            <div class="ac-sub">Mikrobefektetés fillérből</div>
+          </div>
+          <div class="action-card" onclick="nav(document.querySelector('[data-screen=p2p]'))">
+            <div class="ac-icon dark">⇅</div>
+            <div class="ac-title">P2P segélyhitel</div>
+            <div class="ac-sub">Munkáltató által bírált</div>
+          </div>
+          <div class="action-card" onclick="nav(document.querySelector('[data-screen=chain]'))">
+            <div class="ac-icon dark">⛓</div>
+            <div class="ac-title">Blokklánc audit</div>
+            <div class="ac-sub">Hitelesített tranzakciók</div>
+          </div>
+        </div>
+
+        <div class="section-hd">
+          <div class="section-title">Legutóbbi tranzakciók</div>
+          <div class="section-link" onclick="nav(document.querySelector('[data-screen=activity]'))">Összes →</div>
+        </div>
+        <div class="card"><div class="card-body">
+          <div class="tx-list">
+            <div class="tx-item">
+              <div class="tx-icon-wrap g">↑</div>
+              <div class="tx-body"><div class="tx-name">EWA előleg felvétel</div><div class="tx-date">2026. máj. 11. · AFR utalás</div></div>
+              <div class="tx-amt pos">+50 000 Ft</div>
+            </div>
+            <div class="tx-item">
+              <div class="tx-icon-wrap b">↓</div>
+              <div class="tx-body"><div class="tx-name">Automatikus visszavonás</div><div class="tx-date">2026. ápr. 30. · Fizetésnap</div></div>
+              <div class="tx-amt neg">−72 000 Ft</div>
+            </div>
+            <div class="tx-item">
+              <div class="tx-icon-wrap g">↑</div>
+              <div class="tx-body"><div class="tx-name">EWA előleg felvétel</div><div class="tx-date">2026. ápr. 18.</div></div>
+              <div class="tx-amt pos">+72 000 Ft</div>
+            </div>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- ════════ WITHDRAW (F2) ════════ -->
+      <div class="screen" id="sc-withdraw">
+        <div class="two-col">
+          <div>
+            <div class="info-banner green">
+              <div class="banner-icon">✓</div>
+              <div><strong>Ez a te pénzed — nem hitel.</strong> A ledolgozott napok arányában kivehető összeg azonnal, ingyenesen elérhető az Azonnali Fizetési Rendszeren keresztül.</div>
+            </div>
+
+            <div class="card-dark">
+              <div class="card-body">
+                <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--green-mid);margin-bottom:6px;">Maximálisan kivehető</div>
+                <div style="font-size:36px;font-weight:700;color:#fff;letter-spacing:-0.04em;" id="w-max-d">— Ft</div>
+                <div style="font-size:12px;color:var(--dark-text3);margin-top:4px;" id="w-pct-d">—% ledolgozva</div>
+              </div>
+            </div>
+
+            <div class="card"><div class="card-body">
+              <div class="slider-wrap">
+                <div class="slider-label-row">
+                  <span>Mennyit vennél fel?</span>
+                  <span id="w-pct-lbl">—%</span>
+                </div>
+                <div class="big-amount"><span id="w-pick">50 000</span> <span class="unit">Ft</span></div>
+                <input type="range" id="w-slider" min="5000" max="147320" step="1000" value="50000" oninput="wSlide(this.value)">
+                <div class="pill-row" style="margin-top:10px">
+                  <button class="pill" onclick="wSet(25000,this)">25 000</button>
+                  <button class="pill sel" onclick="wSet(50000,this)">50 000</button>
+                  <button class="pill" onclick="wSet(100000,this)">100 000</button>
+                  <button class="pill" id="w-max-pill" onclick="wMax(this)">Max</button>
+                </div>
+              </div>
+            </div></div>
+          </div>
+
+          <div>
+            <div class="card"><div class="card-body">
+              <div class="section-title" style="margin-bottom:14px">Összesítő</div>
+              <div class="fee-table">
+                <div class="fee-row"><span class="lbl">Felvett összeg</span><span class="val" id="w-fee-base">50 000 Ft</span></div>
+                <div class="fee-row"><span class="lbl">Platform díj</span><span class="free">0 Ft — ingyenes</span></div>
+                <div class="fee-row"><span class="lbl">Utalási idő</span><span class="val">~30 mp (AFR)</span></div>
+                <div class="fee-row"><span class="lbl">Cél számla</span><span class="val">OTP ****4821</span></div>
+                <div class="fee-row total"><span class="lbl">Megérkezik</span><span class="val" id="w-fee-total">50 000 Ft</span></div>
+              </div>
+              <button class="btn-primary green-btn mt-16" id="w-cta" onclick="doWithdraw()">Utalás indítása →</button>
+              <button class="btn-outline mt-8" onclick="nav(document.querySelector('[data-screen=loan]'))">Bérhitelt szeretnék helyette (F3)</button>
+              <p style="font-size:11px;color:var(--ink3);text-align:center;margin-top:10px;">Fizetésnapkor automatikusan levonódik a béredből</p>
+            </div></div>
+
+            <div class="card"><div class="card-body">
+              <div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:10px">Tipp</div>
+              <p style="font-size:12px;color:var(--ink3);line-height:1.6">Ha a kamatot is megtakarítanád, próbáld az <strong style="color:var(--purple)">F4 Kamat-befektetési</strong> játékot — a hozam fedezheti a következő bérhited kamatát.</p>
+            </div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════ SUCCESS ════════ -->
+      <div class="screen" id="sc-success">
+        <div class="card"><div class="card-body">
+          <div class="success-center">
+            <div class="success-ring">✓</div>
+            <div class="success-title"><span id="s-amt">50 000 Ft</span></div>
+            <div class="success-note">Az összeg ~30 másodpercen belül megérkezik a bankszámládra az Azonnali Fizetési Rendszeren keresztül.</div>
+          </div>
+        </div></div>
+
+        <div class="two-col">
+          <div class="card"><div class="card-body">
+            <div class="section-title" style="margin-bottom:12px">Bizonylat</div>
+            <div class="fee-table">
+              <div class="fee-row"><span class="lbl">Tranzakció ID</span><span class="val" style="font-family:'JetBrains Mono',monospace;font-size:11px">#TXN-20260511-8821</span></div>
+              <div class="fee-row"><span class="lbl">Dátum</span><span class="val">2026. máj. 11. 09:41</span></div>
+              <div class="fee-row"><span class="lbl">Összeg</span><span class="val" id="s-rec-amt">50 000 Ft</span></div>
+              <div class="fee-row"><span class="lbl">Cél számla</span><span class="val">OTP ****4821</span></div>
+              <div class="fee-row"><span class="lbl">Levonás napja</span><span class="val">Fizetésnap</span></div>
+              <div class="fee-row"><span class="lbl">Platform díj</span><span class="free">0 Ft</span></div>
+            </div>
+          </div></div>
+
+          <div>
+            <div class="card-dark" style="margin-bottom:0">
+              <div class="card-body">
+                <div style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--purple);margin-bottom:8px">⛓ Blokklánc proof</div>
+                <div style="font-size:12px;color:var(--dark-text2);margin-bottom:8px">Block #1,847,332 · Polygon L2</div>
+                <div style="font-size:9px;color:var(--dark-text3);font-family:'JetBrains Mono',monospace;line-height:1.8;word-break:break-all;">0x4f2ac8b19e3d77fa01c82b3e44d6a9c0f5e1d2b8a93c7e6d5f4b2a1c0d9e8f7<br>Hitelesítve: 2026-05-11T09:41:03Z</div>
+              </div>
+            </div>
+            <div style="margin-top:12px">
+              <button class="btn-primary" onclick="nav(document.querySelector('[data-screen=home]'))">← Vissza a főoldalra</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════ LOAN (F3) ════════ -->
+      <div class="screen" id="sc-loan">
+        <div class="two-col">
+          <div>
+            <div class="info-banner amber">
+              <div class="banner-icon">ℹ</div>
+              <div><strong>Ez hitel, nem a te pénzed.</strong> A még le nem dolgozott bérrész kamatért előre felvehető. Visszafizetés fizetésnapkor automatikus.</div>
+            </div>
+
+            <div class="card-dark">
+              <div class="card-body">
+                <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--blue-light);opacity:0.7;margin-bottom:6px">Elérhető kölcsön</div>
+                <div style="font-size:36px;font-weight:700;color:#fff;letter-spacing:-0.04em;" id="l-avail">— Ft</div>
+                <div style="font-size:12px;color:var(--dark-text3);margin-top:4px;" id="l-sub">Még le nem dolgozott rész</div>
+              </div>
+            </div>
+
+            <div class="card"><div class="card-body">
+              <div class="section-title" style="margin-bottom:12px">Scoring pontszám</div>
+              <div style="font-size:28px;font-weight:700;color:var(--green);letter-spacing:-0.03em;margin-bottom:14px">84 <span style="font-size:14px;font-weight:400;color:var(--ink3)">/ 100</span></div>
+              <div class="score-bars">
+                <div class="score-row"><div class="score-lbl">Visszafizetési előzm.</div><div class="score-track"><div class="score-fill" style="width:100%"></div></div><div class="score-num">100</div></div>
+                <div class="score-row"><div class="score-lbl">Munkaviszony stabilitása</div><div class="score-track"><div class="score-fill" style="width:90%"></div></div><div class="score-num">90</div></div>
+                <div class="score-row"><div class="score-lbl">Felvételi arány</div><div class="score-track"><div class="score-fill" style="width:65%"></div></div><div class="score-num">65</div></div>
+                <div class="score-row"><div class="score-lbl">Platform-aktivitás</div><div class="score-track"><div class="score-fill" style="width:72%"></div></div><div class="score-num">72</div></div>
+              </div>
+            </div></div>
+          </div>
+
+          <div>
+            <div class="card"><div class="card-body">
+              <div class="section-title" style="margin-bottom:14px">Bérhitel kalkulátor</div>
+              <div class="fee-table">
+                <div class="fee-row"><span class="lbl">Elérhető összeg</span><span class="val" id="l-fee-avail">— Ft</span></div>
+                <div class="fee-row"><span class="lbl">Személyre szabott kamat</span><span class="val" style="color:var(--amber)">1,8% / tranzakció</span></div>
+                <div class="fee-row"><span class="lbl">Kamat összege</span><span class="val" id="l-interest">— Ft</span></div>
+                <div class="fee-row"><span class="lbl">Visszafizetés</span><span class="val">Fizetésnap, auto.</span></div>
+                <div class="fee-row"><span class="lbl">KHR ellenőrzés</span><span class="val" style="color:var(--green)">Nincs</span></div>
+                <div class="fee-row total"><span class="lbl">Visszafizetendő</span><span class="val" id="l-total">— Ft</span></div>
+              </div>
+              <button class="btn-primary blue-btn mt-16" onclick="alert('Demo: bérhitel igénylés elindítva!')">Bérhitel igénylése →</button>
+              <button class="btn-outline mt-8" onclick="nav(document.querySelector('[data-screen=game]'))">Kamat csökkentése F4-gyel →</button>
+            </div></div>
+
+            <div class="info-banner purple" style="margin-top:0">
+              <div class="banner-icon">◈</div>
+              <div><strong>F4 kombináció:</strong> Ha a kamatot befektetési alapba teszed, és a hozam eléri a kamat összegét, a hiteled ténylegesen kamatmentessé válik!</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════ GAME (F4) ════════ -->
+      <div class="screen" id="sc-game">
+        <div class="game-card">
+          <div class="game-title">◈ F4 — Kamat-befektetési játék</div>
+          <div class="game-headline">Dolgozd le a kamatot</div>
+          <div class="game-sub">A fizetendő kamat befektetési alapba kerül a lejáratig. Ha a hozam eléri a karatot — nulla lett a hiteled díja.</div>
+          <div class="game-progress">
+            <div class="game-fill" id="game-fill" style="width:43%"></div>
+          </div>
+          <div class="game-labels"><span>Kamat: 3 240 Ft</span><span>Aktuális hozam: 1 393 Ft (43%)</span></div>
+        </div>
+
+        <div class="two-col">
+          <div class="card"><div class="card-body">
+            <div class="section-title" style="margin-bottom:14px">Befektetési részletek</div>
+            <div class="fee-table">
+              <div class="fee-row"><span class="lbl">Befektetett összeg</span><span class="val">3 240 Ft</span></div>
+              <div class="fee-row"><span class="lbl">Alaptípus</span><span class="val">Magyar állampapír ETF</span></div>
+              <div class="fee-row"><span class="lbl">Éves hozam (becsült)</span><span class="val" style="color:var(--green)">~6,8%</span></div>
+              <div class="fee-row"><span class="lbl">Lejárat</span><span class="val">2026. máj. 31.</span></div>
+              <div class="fee-row"><span class="lbl">Aktuális hozam</span><span class="val" style="color:var(--green)">+1 393 Ft</span></div>
+              <div class="fee-row total"><span class="lbl">Fedezés mértéke</span><span class="val" style="color:var(--purple)">43%</span></div>
+            </div>
+          </div></div>
+
+          <div>
+            <div class="card"><div class="card-body">
+              <div class="section-title" style="margin-bottom:12px">Hogyan működik?</div>
+              <ol style="font-size:13px;color:var(--ink3);line-height:1.8;padding-left:16px">
+                <li>Felveszed a bérhitelt (F3)</li>
+                <li>A kamat összege befektetési alapba kerül</li>
+                <li>Az alap hozamot termel a lejáratig</li>
+                <li style="color:var(--green);font-weight:600">Ha hozam ≥ kamat → kamatod nulla lett</li>
+                <li>Ha hozam &lt; kamat → csak a különbözetet fizeted</li>
+              </ol>
+            </div></div>
+            <div class="info-banner purple" style="margin-top:12px">
+              <div class="banner-icon">⚠</div>
+              <div>Kizárólag MiFID II szerinti, tőkevédett alacsony kockázatú alapokba kerülnek a összegek.</div>
+            </div>
+            <button class="btn-primary mt-8" style="background:var(--purple);" onclick="alert('Demo: befektetési játék aktiválva!')">F4 Játék aktiválása</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════ ROUNDUP (F6) ════════ -->
+      <div class="screen" id="sc-roundup">
+        <div class="roundup-card">
+          <div class="roundup-title">⬡ F6 — Felkerekítéses mikrobefektetés</div>
+          <div class="roundup-amount">4 871 Ft</div>
+          <div class="roundup-sub">Összegyűlt filléreidből ez hónapban · Befektetési alapban</div>
+        </div>
+
+        <div class="two-col">
+          <div class="card"><div class="card-body">
+            <div class="section-title" style="margin-bottom:14px">Hogyan működik?</div>
+            <p style="font-size:13px;color:var(--ink3);line-height:1.7;margin-bottom:12px">Minden bankkártyás vásárlásnál az összeg felkerekítésre kerül a következő ezresre. A különbség automatikusan alacsony kockázatú befektetési alapba kerül.</p>
+            <div style="background:var(--bg2);border-radius:var(--r-sm);padding:12px;font-size:12px;color:var(--ink2)">
+              <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)"><span>Kávé – 1 290 Ft</span><span style="color:var(--green);font-weight:600">+710 Ft →</span></div>
+              <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)"><span>Bolt – 4 560 Ft</span><span style="color:var(--green);font-weight:600">+440 Ft →</span></div>
+              <div style="display:flex;justify-content:space-between;padding:4px 0"><span>BKK jegy – 350 Ft</span><span style="color:var(--green);font-weight:600">+650 Ft →</span></div>
+            </div>
+          </div></div>
+
+          <div>
+            <div class="card"><div class="card-body">
+              <div class="section-title" style="margin-bottom:14px">Egyenleg & hozam</div>
+              <div class="fee-table">
+                <div class="fee-row"><span class="lbl">Összegyűlt tőke</span><span class="val">4 871 Ft</span></div>
+                <div class="fee-row"><span class="lbl">Aktuális hozam</span><span class="val" style="color:var(--green)">+183 Ft</span></div>
+                <div class="fee-row"><span class="lbl">Fedezi a kamatból</span><span class="val" style="color:var(--purple)">13%</span></div>
+                <div class="fee-row"><span class="lbl">Alap</span><span class="val">Pénzpiaci alap</span></div>
+                <div class="fee-row total"><span class="lbl">Teljes egyenleg</span><span class="val" style="color:var(--amber)">5 054 Ft</span></div>
+              </div>
+              <div class="info-banner amber" style="margin-top:12px">
+                <div class="banner-icon">💡</div>
+                <div><strong>Kombinálj F4-gyel!</strong> A felkerekítéses hozam + F4 hozam együtt fedezheti a bérhited kamatát.</div>
+              </div>
+              <button class="btn-primary amber-btn mt-12" onclick="alert('Demo: felkerekítés aktív!')">Felkerekítés aktiválása</button>
+              <button class="btn-outline mt-8">Kifizetés kérése</button>
+            </div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════ P2P (F5) ════════ -->
+      <div class="screen" id="sc-p2p">
+        <div class="info-banner blue">
+          <div class="banner-icon">ℹ</div>
+          <div><strong>Munkáltató által bírált segélyhitel.</strong> Válsághelyzetre (temetés, perköltség, orvosi) — HR jóváhagyással, kedvezményes kamattal, automatikus törlesztéssel.</div>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <div class="card"><div class="card-body">
+              <div class="section-title" style="margin-bottom:14px">Új igénylés</div>
+              <div style="margin-bottom:10px">
+                <label style="font-size:12px;color:var(--ink3);display:block;margin-bottom:4px">Igénylés célja</label>
+                <select style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:'Figtree',sans-serif;font-size:13px;background:var(--bg);color:var(--ink);outline:none;">
+                  <option>Temetési költség</option>
+                  <option>Orvosi számla</option>
+                  <option>Perköltség</option>
+                  <option>Lakhatási vészhelyzet</option>
+                  <option>Egyéb</option>
+                </select>
+              </div>
+              <div style="margin-bottom:10px">
+                <label style="font-size:12px;color:var(--ink3);display:block;margin-bottom:4px">Igényelt összeg</label>
+                <div class="big-amount" style="font-size:28px"><span id="p2p-pick">300 000</span> <span class="unit">Ft</span></div>
+                <input type="range" min="50000" max="1000000" step="10000" value="300000" oninput="p2pSlide(this.value)">
+              </div>
+              <div style="margin-bottom:12px">
+                <label style="font-size:12px;color:var(--ink3);display:block;margin-bottom:4px">Rövid indoklás</label>
+                <textarea style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:'Figtree',sans-serif;font-size:13px;color:var(--ink);background:var(--bg);resize:vertical;min-height:80px;outline:none;" placeholder="Röviden írd le a helyzetet..."></textarea>
+              </div>
+              <button class="btn-primary blue-btn" onclick="alert('Demo: P2P igénylés elküldve HR részére!')">Igénylés küldése HR-nek →</button>
+            </div></div>
+          </div>
+
+          <div>
+            <div class="card"><div class="card-body">
+              <div class="section-title" style="margin-bottom:12px">Várható feltételek</div>
+              <div class="fee-table">
+                <div class="fee-row"><span class="lbl">Igényelt összeg</span><span class="val" id="p2p-fee">300 000 Ft</span></div>
+                <div class="fee-row"><span class="lbl">Kamat (jó viszony esetén)</span><span class="val" style="color:var(--green)">0–0,5% / hó</span></div>
+                <div class="fee-row"><span class="lbl">KHR ellenőrzés</span><span class="val" style="color:var(--green)">Nincs</span></div>
+                <div class="fee-row"><span class="lbl">Jóváhagyó</span><span class="val">HR / vezető</span></div>
+                <div class="fee-row"><span class="lbl">Törlesztés</span><span class="val">Havi bérből auto.</span></div>
+              </div>
+            </div></div>
+
+            <div class="section-hd" style="margin-top:16px">
+              <div class="section-title">Korábbi igénylések</div>
+            </div>
+            <div class="hr-request">
+              <div class="hr-req-top">
+                <div class="hr-req-name">Orvosi számla – 150 000 Ft</div>
+                <div class="status-pill approved">Jóváhagyva</div>
+              </div>
+              <div class="hr-req-sub">2026. jan. 15. · 0,3% / hó · 5 havi törlesztés</div>
+            </div>
+            <div class="hr-request">
+              <div class="hr-req-top">
+                <div class="hr-req-name">Temetési költség – 450 000 Ft</div>
+                <div class="status-pill review">Elbírálás alatt</div>
+              </div>
+              <div class="hr-req-sub">2026. máj. 10. · Várakozás: ~1-2 munkanap</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════ ACTIVITY ════════ -->
+      <div class="screen" id="sc-activity">
+        <div class="stat-row">
+          <div class="stat-card"><div class="stat-label">Előleg idén</div><div class="stat-value">5</div><div class="stat-note">tranzakció</div></div>
+          <div class="stat-card"><div class="stat-label">Összes felvett</div><div class="stat-value green">312 000</div><div class="stat-note">Ft</div></div>
+          <div class="stat-card"><div class="stat-label">Fizetett díj</div><div class="stat-value">0</div><div class="stat-note">Ft – ingyenes</div></div>
+          <div class="stat-card"><div class="stat-label">Pénzügyi egészség</div><div class="stat-value amber">84</div><div class="stat-note">/ 100</div></div>
+        </div>
+
+        <div class="two-col">
+          <div class="card"><div class="card-body">
+            <div class="section-title" style="margin-bottom:14px">Havi felvételek</div>
+            <div class="mini-chart" id="mini-chart"></div>
+          </div></div>
+
+          <div class="card"><div class="card-body">
+            <div class="section-title" style="margin-bottom:12px">Pénzügyi egészség</div>
+            <div style="font-size:32px;font-weight:700;color:var(--green);letter-spacing:-0.04em;margin-bottom:14px">84 <span style="font-size:14px;font-weight:400;color:var(--ink3)">pont</span></div>
+            <div class="score-bars">
+              <div class="score-row"><div class="score-lbl">Visszafizetési előzm.</div><div class="score-track"><div class="score-fill" style="width:100%"></div></div><div class="score-num">100</div></div>
+              <div class="score-row"><div class="score-lbl">Felvételi arány</div><div class="score-track"><div class="score-fill" style="width:65%"></div></div><div class="score-num">65</div></div>
+              <div class="score-row"><div class="score-lbl">Munkaviszony</div><div class="score-track"><div class="score-fill" style="width:90%"></div></div><div class="score-num">90</div></div>
+              <div class="score-row"><div class="score-lbl">Aktivitás</div><div class="score-track"><div class="score-fill" style="width:72%"></div></div><div class="score-num">72</div></div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="section-hd">
+          <div class="section-title">Összes tranzakció</div>
+        </div>
+        <div class="card"><div class="card-body">
+          <div class="tx-list">
+            <div class="tx-item"><div class="tx-icon-wrap g">↑</div><div class="tx-body"><div class="tx-name">EWA előleg felvétel</div><div class="tx-date">2026. máj. 11. · AFR</div></div><div class="tx-amt pos">+50 000 Ft</div></div>
+            <div class="tx-item"><div class="tx-icon-wrap b">↓</div><div class="tx-body"><div class="tx-name">Automatikus visszavonás</div><div class="tx-date">2026. ápr. 30. · Fizetésnap</div></div><div class="tx-amt neg">−72 000 Ft</div></div>
+            <div class="tx-item"><div class="tx-icon-wrap g">↑</div><div class="tx-body"><div class="tx-name">EWA előleg felvétel</div><div class="tx-date">2026. ápr. 18.</div></div><div class="tx-amt pos">+72 000 Ft</div></div>
+            <div class="tx-item"><div class="tx-icon-wrap p">⛓</div><div class="tx-body"><div class="tx-name">Fizetésnap hitelesítve</div><div class="tx-date">2026. ápr. 01. · Block #1,831,044</div></div><div class="tx-amt dim">on-chain</div></div>
+            <div class="tx-item"><div class="tx-icon-wrap b">↓</div><div class="tx-body"><div class="tx-name">Automatikus visszavonás</div><div class="tx-date">2026. már. 31.</div></div><div class="tx-amt neg">−60 000 Ft</div></div>
+            <div class="tx-item"><div class="tx-icon-wrap g">↑</div><div class="tx-body"><div class="tx-name">EWA előleg felvétel</div><div class="tx-date">2026. már. 15.</div></div><div class="tx-amt pos">+60 000 Ft</div></div>
+            <div class="tx-item"><div class="tx-icon-wrap a">⬡</div><div class="tx-body"><div class="tx-name">Felkerekítés jóváírás</div><div class="tx-date">2026. már. 01. · F6 alap</div></div><div class="tx-amt pos">+183 Ft</div></div>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- ════════ CHAIN ════════ -->
+      <div class="screen" id="sc-chain">
+        <div class="info-banner purple">
+          <div class="banner-icon">⛓</div>
+          <div><strong>Mit hitelesít a blokklánc?</strong> Kizárólag a munkáltató által aláírt fizetésnap dátumát és a tranzakciók időpontját. Pénz nem kerül on-chain — csak az audit trail.</div>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <div class="section-hd"><div class="section-title">Blokknapló</div></div>
+            <div class="block-card">
+              <div class="block-top"><span class="block-num">Block #1,847,332</span><span class="block-time">2026-05-11 09:41:03</span></div>
+              <div class="block-event"><strong>EWA_WITHDRAW</strong> · 50 000 Ft · User: KM-0481</div>
+              <div class="block-hash">0x4f2ac8b19e3d77fa01c82b3e44d6a9c0f5e1d2b8a93c7e6d5f4b2a1c0d9e8f7</div>
+            </div>
+            <div class="block-card">
+              <div class="block-top"><span class="block-num">Block #1,847,201</span><span class="block-time">2026-05-01 08:00:00</span></div>
+              <div class="block-event"><strong>PAYDATE_CERT</strong> · Fizetésnap: 2026-05-31 · TechKft-019 · Aláírva</div>
+              <div class="block-hash">0x9a1b3c5d7e2f4a6b8c0d1e3f5a7b9c2d4e6f8a0b1c3d5e7f9a2b4c6d8e0f2a4</div>
+            </div>
+            <div class="block-card">
+              <div class="block-top"><span class="block-num">Block #1,831,044</span><span class="block-time">2026-04-30 07:58:12</span></div>
+              <div class="block-event"><strong>EWA_REPAY_AUTO</strong> · 72 000 Ft · Fizetésnap auto levonás</div>
+              <div class="block-hash">0x3c7e1a9f5b2d8e4c0a6f2b8d4e0c6a2f8b4d0e6c2a8f4b0d6e2c8a4f0b6d2e8</div>
+            </div>
+            <div class="block-card">
+              <div class="block-top"><span class="block-num">Block #1,814,901</span><span class="block-time">2026-04-01 08:00:00</span></div>
+              <div class="block-event"><strong>PAYDATE_CERT</strong> · Fizetésnap: 2026-04-30 · TechKft-019</div>
+              <div class="block-hash">0x7d2e4f6a8b0c2e4f6a8b0c2e4f6a8b0c2e4f6a8b0c2e4f6a8b0c2e4f6a8b0c2e</div>
+            </div>
+          </div>
+
+          <div>
+            <div class="card"><div class="card-body">
+              <div class="section-title" style="margin-bottom:12px">Hálózat állapota</div>
+              <div class="fee-table">
+                <div class="fee-row"><span class="lbl">Hálózat</span><span class="val" style="color:var(--purple)">Polygon L2</span></div>
+                <div class="fee-row"><span class="lbl">Legutóbbi block</span><span class="val">#1,847,332</span></div>
+                <div class="fee-row"><span class="lbl">Státusz</span><span class="val" style="color:var(--green)">● Él</span></div>
+                <div class="fee-row"><span class="lbl">Munkáltató aláírás</span><span class="val" style="color:var(--green)">✓ Érvényes</span></div>
+                <div class="fee-row"><span class="lbl">Smart contract</span><span class="val" style="font-family:'JetBrains Mono',monospace;font-size:10px">0xAB4F…19CE</span></div>
+              </div>
+            </div></div>
+
+            <div class="card-dark" style="margin-top:12px"><div class="card-body">
+              <div style="font-size:11px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Smart contract logika</div>
+              <pre style="font-size:10px;color:var(--dark-text3);font-family:'JetBrains Mono',monospace;line-height:1.8;white-space:pre-wrap;">function certifyPayDate(
+  address employer,
+  uint256 payTimestamp,
+  bytes signature
+) external {
+  require(verify(signature));
+  emit PayDateCertified(
+    employer,
+    msg.sender,
+    payTimestamp,
+    block.timestamp
+  );
+}</pre>
+            </div></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page-content -->
+  </div><!-- /main -->
+
+  <!-- MOBILE BOTTOM NAV -->
+  <nav class="mobile-bottom-nav">
+    <div class="mbn-inner">
+      <button class="mbn-item active" data-screen="home" onclick="mbnNav(this)"><div class="mbn-icon">⌂</div>Főoldal</button>
+      <button class="mbn-item" data-screen="withdraw" onclick="mbnNav(this)"><div class="mbn-icon">↑</div>Előleg</button>
+      <button class="mbn-item" data-screen="loan" onclick="mbnNav(this)"><div class="mbn-icon">%</div>Hitel</button>
+      <button class="mbn-item" data-screen="activity" onclick="mbnNav(this)"><div class="mbn-icon">▦</div>Aktivitás</button>
+      <button class="mbn-item" data-screen="chain" onclick="mbnNav(this)"><div class="mbn-icon">⛓</div>Lánc</button>
+    </div>
+  </nav>
+
+</div><!-- /app-shell -->
+
+<script>
+/* ═══ STATE ══ */
+var wAmt = 50000;
+var availAmt = 0;
+
+var screenTitles = {
+  home:     ['Főoldal',            'Üdvözöljük, Kovács Máté!'],
+  withdraw: ['Előleg felvétel',    'F2 — Ledolgozott béredből, azonnal, ingyen'],
+  loan:     ['Bérelőhitelezés',    'F3 — A még le nem dolgozott bérrész kamatért'],
+  game:     ['Kamat-befektetés',   'F4 — Dolgozd le a kamatot befektetéssel'],
+  roundup:  ['Felkerekítés',       'F6 — Mikrobefektetés minden vásárlásnál'],
+  p2p:      ['P2P Segélyhitel',    'F5 — Munkáltató által bírált válságkölcsön'],
+  activity: ['Aktivitás',          'Tranzakciótörténet & pénzügyi egészség'],
+  chain:    ['Blokklánc audit',    'Hitelesített tranzakciók a Polygon L2-n'],
+  success:  ['Sikeres utalás',     'Az összeg úton van!'],
+};
+
+/* ═══ NAVIGATION ══ */
+function nav(el) {
+  if (!el) return;
+  var id = el.dataset.screen;
+  if (!id) return;
+  showScreen(id);
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+  if (el.classList.contains('nav-item')) el.classList.add('active');
+  closeSidebar();
+}
+
+function mbnNav(el) {
+  var id = el.dataset.screen;
+  showScreen(id);
+  document.querySelectorAll('.mbn-item').forEach(function(n){ n.classList.remove('active'); });
+  el.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(function(n){
+    n.classList.toggle('active', n.dataset.screen === id);
+  });
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  var sc = document.getElementById('sc-' + id);
+  if (sc) {
+    sc.classList.add('active');
+    sc.style.animation = 'none';
+    sc.offsetHeight; // reflow
+    sc.style.animation = 'fadeIn 0.2s ease';
+  }
+  var info = screenTitles[id] || [id, ''];
+  document.getElementById('topbar-title').textContent = info[0];
+  document.getElementById('topbar-sub').textContent = info[1];
+  window.scrollTo(0,0);
+}
+
+/* ═══ SIDEBAR ══ */
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+
+/* ═══ WITHDRAW ══ */
+function fmt(n) { return Math.round(n).toLocaleString('hu-HU') + ' Ft'; }
+
+function wSlide(v) {
+  wAmt = parseInt(v);
+  updateWUI();
+  document.querySelectorAll('.pill').forEach(function(p){ p.classList.remove('sel'); });
+}
+function wSet(v, el) {
+  wAmt = v;
+  document.getElementById('w-slider').value = v;
+  updateWUI();
+  document.querySelectorAll('.pill').forEach(function(p){ p.classList.remove('sel'); });
+  if (el) el.classList.add('sel');
+}
+function wMax(el) { wSet(availAmt, el); }
+
+function updateWUI() {
+  var p = document.getElementById('w-pick');
+  var fb = document.getElementById('w-fee-base');
+  var ft = document.getElementById('w-fee-total');
+  var pl = document.getElementById('w-pct-lbl');
+  if (p) p.textContent = Math.round(wAmt).toLocaleString('hu-HU');
+  if (fb) fb.textContent = fmt(wAmt);
+  if (ft) ft.textContent = fmt(wAmt);
+  if (pl && availAmt > 0) pl.textContent = Math.round(wAmt/availAmt*100) + '%';
+}
+
+function doWithdraw() {
+  var btn = document.getElementById('w-cta');
+  btn.disabled = true; btn.textContent = 'Feldolgozás...';
+  setTimeout(function(){
+    var a = fmt(wAmt);
+    document.getElementById('s-amt').textContent = a;
+    document.getElementById('s-rec-amt').textContent = a;
+    showScreen('success');
+    document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+    btn.disabled = false; btn.textContent = 'Utalás indítása →';
+  }, 1200);
+}
+
+/* ═══ P2P SLIDER ══ */
+function p2pSlide(v) {
+  document.getElementById('p2p-pick').textContent = parseInt(v).toLocaleString('hu-HU');
+  document.getElementById('p2p-fee').textContent = parseInt(v).toLocaleString('hu-HU') + ' Ft';
+}
+
+/* ═══ BAR CHART ══ */
+function buildChart() {
+  var months = ['Jan','Feb','Már','Ápr','Máj'];
+  var vals   = [48000,60000,60000,72000,50000];
+  var maxV   = Math.max.apply(null, vals);
+  var wrap   = document.getElementById('mini-chart');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  months.forEach(function(m, i){
+    var col = document.createElement('div');
+    col.className = 'mini-col';
+    var h = Math.round(vals[i]/maxV * 64);
+    col.innerHTML = '<div class="mini-bar'+(i===months.length-1?' active':'')+'" style="height:'+h+'px" title="'+vals[i].toLocaleString('hu-HU')+' Ft"></div><div class="mini-month">'+m+'</div>';
+    wrap.appendChild(col);
+  });
+}
+
+/* ═══ REAL-TIME TICK ══ */
+function tick() {
+  var now = new Date();
+  var totalDays = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+  var elapsed = (now.getDate()-1) + now.getHours()/24 + now.getMinutes()/1440 + now.getSeconds()/86400;
+  var pct = Math.min(100, (elapsed/totalDays)*100);
+  availAmt = Math.round(214000 * elapsed / totalDays);
+  var remaining = Math.max(0, 214000 - availAmt);
+
+  // Home hero
+  var ha = document.getElementById('h-avail');
+  var hp = document.getElementById('h-pct');
+  var hf = document.getElementById('h-fill');
+  var hd = document.getElementById('h-day');
+  if (ha) ha.textContent = availAmt.toLocaleString('hu-HU');
+  if (hp) hp.textContent = Math.round(pct) + '%';
+  if (hf) hf.style.width = Math.round(pct) + '%';
+  if (hd) hd.textContent = now.getDate() + ' / ' + totalDays + ' nap';
+
+  // Withdraw screen
+  var wm = document.getElementById('w-max-d');
+  var wp = document.getElementById('w-pct-d');
+  var sl = document.getElementById('w-slider');
+  if (wm) wm.textContent = availAmt.toLocaleString('hu-HU') + ' Ft';
+  if (wp) wp.textContent = Math.round(pct) + '% ledolgozva';
+  if (sl) sl.max = availAmt;
+
+  // Loan screen
+  var la = document.getElementById('l-avail');
+  var ls = document.getElementById('l-sub');
+  var lf = document.getElementById('l-fee-avail');
+  var li = document.getElementById('l-interest');
+  var lt = document.getElementById('l-total');
+  if (la) la.textContent = remaining.toLocaleString('hu-HU') + ' Ft';
+  if (ls) ls.textContent = Math.round(100-pct) + '% még le nem dolgozva';
+  if (lf) lf.textContent = fmt(remaining);
+  if (li) li.textContent = fmt(Math.round(remaining*0.018));
+  if (lt) lt.textContent = fmt(Math.round(remaining*1.018));
+
+  // Countdown
+  var payDay = new Date(now.getFullYear(), now.getMonth()+1, 0, 23, 59, 59);
+  var diff   = Math.max(0, payDay - now);
+  var d = Math.floor(diff/86400000);
+  var h = Math.floor((diff%86400000)/3600000);
+  var m = Math.floor((diff%3600000)/60000);
+  var s = Math.floor((diff%60000)/1000);
+  var pad = function(n){ return String(n).padStart(2,'0'); };
+  var cdd = document.getElementById('cd-d');
+  var cdh = document.getElementById('cd-h');
+  var cdm = document.getElementById('cd-m');
+  var cds = document.getElementById('cd-s');
+  if (cdd) cdd.textContent = pad(d);
+  if (cdh) cdh.textContent = pad(h);
+  if (cdm) cdm.textContent = pad(m);
+  if (cds) cds.textContent = pad(s);
+
+  // Topbar date
+  var td = document.getElementById('topbar-date');
+  if (td) td.textContent = now.toLocaleDateString('hu-HU',{year:'numeric',month:'short',day:'numeric'});
+
+  setTimeout(tick, 1000);
+}
+
+/* ═══ INIT ══ */
+var style = document.createElement('style');
+style.textContent = '@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}';
+document.head.appendChild(style);
+
+buildChart();
+tick();
+</script>
+</body>
+</html>
