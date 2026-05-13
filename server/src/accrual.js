@@ -15,7 +15,7 @@ function getCycleStart(payDay, now) {
 function calculateAccrual(contract, oracleNow) {
   const cycleStart = getCycleStart(contract.payDay, oracleNow);
   const contractStart = new Date(contract.createdAt);
-  const accrualStart = contractStart > cycleStart ? contractStart : cycleStart;
+  const accrualStart = new Date(Math.max(contractStart.getTime(), cycleStart.getTime()));
 
   const elapsedMs = Math.max(0, oracleNow.getTime() - accrualStart.getTime());
   const earnedDays = Math.floor(elapsedMs / DAY_MS);

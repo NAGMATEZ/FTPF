@@ -27,12 +27,12 @@ function App() {
   const [message, setMessage] = useState('');
 
   const loadEmployee = useCallback(async () => {
-    const data = await api('/api/employee/2/dashboard');
+    const data = await api('/api/employee/dashboard');
     setEmployeeData(data);
   }, []);
 
   const loadEmployer = useCallback(async () => {
-    const data = await api('/api/employer/1/dashboard');
+    const data = await api('/api/employer/dashboard');
     setEmployerData(data);
   }, []);
 
@@ -53,7 +53,7 @@ function App() {
         method: 'POST',
         body: JSON.stringify({ amount: Number(withdrawAmount) })
       });
-      setMessage(`Advance request submitted (approvedAmount: ${result.approvedAmount} HUF)`);
+      setMessage(`Advance request submitted (approved amount: ${result.approvedAmount} HUF)`);
       await refreshAll();
     } catch (err) {
       setError(err.message);

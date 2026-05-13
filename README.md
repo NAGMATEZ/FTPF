@@ -51,6 +51,8 @@ npm run dev:client
 - Server: `http://localhost:3001`
 - Client: `http://localhost:5173`
 
+Optional: set `VITE_API_URL` in the client environment if your API runs on a non-default URL.
+
 ## Demo users (seed)
 
 - Employer: ID `1`
@@ -60,9 +62,9 @@ npm run dev:client
 ## API highlights
 
 - `GET /api/time` – oracle timestamp and company payDay
-- `GET /api/employee/2/dashboard` – employee data + contract + accrual + ledger
+- `GET /api/employee/dashboard` – employee data + contract + accrual + ledger
 - `POST /api/employee/2/withdraw` – request advance
-- `GET /api/employer/1/dashboard` – employer data + requests + ledger
+- `GET /api/employer/dashboard` – employer data + requests + ledger
 - `POST /api/employer/1/liquidity` – adjust company liquidity
 - `POST /api/employer/1/requests/:requestId/approve` – approve + trigger payout (simulated Qvik/AFR)
 

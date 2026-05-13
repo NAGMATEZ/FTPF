@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
+const { randomUUID } = require('crypto');
 const { getDb } = require('./db');
 const { addLedgerEntry } = require('./ledger');
 const { getOracleTimestamp } = require('./timeOracle');
@@ -7,9 +9,20 @@ const { calculateAccrual } = require('./accrual');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const DEMO_EMPLOYER_ID = 1;
+const DEMO_EMPLOYEE_ID = 2;
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 120,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: { error: 'Too many requests. Please retry shortly.' }
+});
 
+app.set('trust proxy', 1);
 app.use(cors());
 app.use(express.json());
+app.use('/api', apiLimiter);
 
 function round2(value) {
   return Number(Number(value).toFixed(2));
@@ -65,9 +78,9 @@ app.get('/api/time', async (req, res) => {
   });
 });
 
-app.get('/api/employee/:employeeId/dashboard', async (req, res) => {
+app.get('/api/employee/dashboard', async (req, res) => {
   const db = await getDb();
-  const employeeId = Number(req.params.employeeId);
+  const employeeId = DEMO_EMPLOYEE_ID;
   const contract = await getContractByEmployeeId(db, employeeId);
 
   if (!contract) {
@@ -192,9 +205,9 @@ app.post('/api/employee/:employeeId/withdraw', async (req, res) => {
   });
 });
 
-app.get('/api/employer/:employerId/dashboard', async (req, res) => {
+app.get('/api/employer/dashboard', async (req, res) => {
   const db = await getDb();
-  const employerId = Number(req.params.employerId);
+  const employerId = DEMO_EMPLOYER_ID;
 
   const employer = await db.get('SELECT * FROM users WHERE id = ? AND role = ?', [employerId, 'EMPLOYER']);
   if (!employer) {
@@ -252,8 +265,8 @@ app.post('/api/employer/:employerId/liquidity', async (req, res) => {
     return res.status(400).json({ error: 'Invalid amount' });
   }
 
-  const contract = await db.get('SELECT * FROM work_contracts WHERE employerId = ? LIMIT 1', [employerId]);
-  if (!contract) {
+  const contracts = await db.all('SELECT id FROM work_contracts WHERE employerId = ?', [employerId]);
+  if (contracts.length === 0) {
     return res.status(404).json({ error: 'No contract for employer' });
   }
 
@@ -270,17 +283,21 @@ app.post('/api/employer/:employerId/liquidity', async (req, res) => {
   const oracle = await getOracleConfig(db);
   const oracleNow = getOracleTimestamp(oracle);
 
-  await addLedgerEntry(db, {
-    contractId: contract.id,
-    eventType: amount > 0 ? 'LIQUIDITY_TOPUP' : 'LIQUIDITY_REDUCTION',
-    amount,
-    feeAmount: 0,
-    details: {
-      employerId,
-      resultingLiquidityBalance: newBalance
-    },
-    oracleTimestamp: oracleNow.toISOString()
-  });
+  await Promise.all(
+    contracts.map((contract) =>
+      addLedgerEntry(db, {
+        contractId: contract.id,
+        eventType: amount > 0 ? 'LIQUIDITY_TOPUP' : 'LIQUIDITY_REDUCTION',
+        amount,
+        feeAmount: 0,
+        details: {
+          employerId,
+          resultingLiquidityBalance: newBalance
+        },
+        oracleTimestamp: oracleNow.toISOString()
+      })
+    )
+  );
 
   res.json({ liquidityBalance: newBalance });
 });
@@ -307,7 +324,11 @@ app.post('/api/employer/:employerId/requests/:requestId/approve', async (req, re
   }
 
   const company = await db.get('SELECT * FROM companies WHERE id = 1');
-  let payoutAmount = round2(request.approvedAmount ?? request.requestedAmount);
+  if (request.approvedAmount === null || request.approvedAmount === undefined) {
+    return res.status(400).json({ error: 'Pending request has no approved amount' });
+  }
+
+  let payoutAmount = round2(request.approvedAmount);
 
   if (payoutAmount > company.liquidityBalance) {
     if (company.liquidityBalance < request.minWithdraw) {
@@ -325,7 +346,7 @@ app.post('/api/employer/:employerId/requests/:requestId/approve', async (req, re
   const newLiquidity = round2(company.liquidityBalance - payoutAmount);
   const oracle = await getOracleConfig(db);
   const oracleNow = getOracleTimestamp(oracle);
-  const paymentRef = `SIM-${Date.now()}`;
+  const paymentRef = `SIM-${randomUUID()}`;
 
   await db.run('UPDATE companies SET liquidityBalance = ? WHERE id = 1', [newLiquidity]);
   await syncCompanyLiquidityToContracts(db, newLiquidity);
